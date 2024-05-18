@@ -102,7 +102,7 @@ void JsonParser::_ReadValue()
     // default:
     //     break;
     // }
-    qDebug() << "Test" << ScheduleArray["schedule"][0];
+    //qDebug() << "Test" << ScheduleArray["schedule"][0];
     QFile FileBuffer("Buffer.json");
     FileBuffer.open(QIODevice::ReadWrite);
     if (FileBuffer.isOpen())
@@ -110,15 +110,16 @@ void JsonParser::_ReadValue()
 
         QString FormattedString {ScheduleArray["schedule"][0].toObject()["day"].toString()}; //day
         //QObject
-        QJsonArray Subjects{ScheduleArray["schedule"][0]["even"].toArray()};
+        QJsonArray Subjects{ScheduleArray["schedule"][1]["even"].toArray()};
         qDebug() << "\n день" << FormattedString;
         qDebug() << "\n предметы" << Subjects;
+        qDebug() << "\nКонкретный" << Subjects[0][3];   //qDebug() << "\nКонкретный" << Subjects[0][3]; - сис админ
+        //обращение в нулю сначала обязательно, потому что видимо все в общем массиве.
+        // QJsonValue Specific{Subjects[0][0]};
+        // qDebug() << "\n конкретный" << Specific;
 
-        QJsonValue Specific{Subjects[0][0]};
-        qDebug() << "\n конкретный" << Specific;
-
-        qDebug() << Specific.toArray()[0].toObject()["name"].toString();
-        //FileBuffer.write(Subjects["name"].toString().toStdString().c_str());
+        // qDebug() << Specific.toArray()[0].toObject()["name"].toString();
+        // //FileBuffer.write(Subjects["name"].toString().toStdString().c_str());
 
         qDebug() << "successful writing";
     }
