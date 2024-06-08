@@ -9,6 +9,7 @@ Window {
     height: 480
     visible: true
     title: qsTr("Hello World")
+
     ServerCall
     {
         id: _ServerCall
@@ -16,7 +17,55 @@ Window {
     }
     JsonParser
     {
+
         id: _Parser
+        Component.onCompleted:
+        {
+
+            //_Parser._FillCurrentDayS()
+            _Parser._PrintAmount()
+
+        }
+
+    }
+
+    Rectangle
+    {
+
+        id: _Backwards
+
+        width: 100
+        height: 100
+        color: "black"
+        x: 30; y: 30;
+        MouseArea{
+            anchors.fill: parent
+            onClicked:
+            {
+                _Parser._DecrementDay()
+
+            }
+        }
+
+    }
+    Rectangle
+    {
+        id: _Forward
+        width: 100
+        height: 100
+        color: "white"
+        x: 300; y: 30;
+        border.color: "black"
+        border.width: 1
+        anchors.verticalCenter: _Backwards.verticalCenter
+        MouseArea{
+            anchors.fill: parent
+            onClicked:
+            {
+                _Parser._IncrementDay()
+
+            }
+        }
     }
 
     Switch
@@ -73,7 +122,7 @@ Window {
             onClicked:
             {
                 CustomColors._CurrentTheme = CustomColors.themes._Light
-                _Parser._GetReply(_Group.text)
+                _Parser._GetReply("ИКБО-07-21")
             }
         }
     }
@@ -86,23 +135,57 @@ Window {
         anchors.horizontalCenter: _Button.horizontalCenter
         anchors.top: _Button.bottom
         color: "red"
+        Text {
+            id: _Read
+            text: qsTr("Print Items")
+            font.bold: true
+            font.pointSize: 12
+            color: "black"
+        }
         MouseArea
         {
             anchors.fill: parent
             onClicked:
             {
-                _Parser._ReadValue()
-
+                //_Parser._ReadValue(_Day.text) //deprecated
+                _Parser._FillCurrentDayS()
             }
         }
     }
-    TextField
+
+
+    ListView
     {
-        id: _Group
-        width: 300
-        height: 100
+        z: -1
+        id: _ListLines
         anchors.top: _Button2.bottom
-        anchors.horizontalCenter: _Button2.horizontalCenter
+        width: parent.width
+        height: 50 * 60
+        spacing: -1
+
+        model: _Parser._ItemName
+        delegate:
+
+            Rectangle
+                {
+                    id: _Deligated
+                    border.color: "black"
+                    border.width: 1
+                    width: parent.width
+                    height: 60
+                    Text {
+
+                        id: name
+                        font.bold: true
+                        text: modelData
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        // anchors.horizontalCenter: parent.horizontalCenter
+                        font.pointSize: 12
+                        color: "black"
+
+                    }
+                }
     }
 
 

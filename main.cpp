@@ -3,6 +3,7 @@
 # include "ServerCall.h"
 # include "JsonParser.h"
 # include <QObject>
+# include "Subject.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,6 +49,7 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
     qmlRegisterType<ServerCall>("ServerCall", 1, 0, "ServerCall");
     qmlRegisterType<JsonParser>("JsonParser", 1, 0, "JsonParser");
+    qmlRegisterType<Subject>("com.Subject", 1, 0, "Subject");
     engine.load(url);
 
     return app.exec();

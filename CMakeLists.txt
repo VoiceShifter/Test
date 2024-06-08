@@ -25,8 +25,11 @@ qt_add_qml_module(appPcTest
     SOURCES
         ServerCall.h ServerCall.cpp
         JsonParser.h JsonParser.cpp
+        SOURCES Subject.h Subject.cpp
+        QML_FILES Main2.qml
 
 )
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -49,3 +52,4 @@ install(TARGETS appPcTest
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
