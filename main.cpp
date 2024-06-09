@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     // }
     qDebug() << "Тест русского языка";
     QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/PcTest/Main.qml"));
+    const QUrl url(QStringLiteral("qrc:/PcTest/Main2.qml"));
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,

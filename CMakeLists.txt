@@ -17,6 +17,8 @@ qt_add_qml_module(appPcTest
     VERSION 1.0
     QML_FILES
         Main.qml
+        Main2.qml
+        AttendanceLine.qml
         MyDrawer.qml
         ColorsNSizes.qml
         CustomColors/qmldir
@@ -25,8 +27,8 @@ qt_add_qml_module(appPcTest
     SOURCES
         ServerCall.h ServerCall.cpp
         JsonParser.h JsonParser.cpp
-        SOURCES Subject.h Subject.cpp
-        QML_FILES Main2.qml
+        Subject.h Subject.cpp
+        Synchronizer.hpp Synchronizer.cpp
 
 )
 

@@ -1,17 +1,23 @@
-#include "JsonParser.h"
+# include "JsonParser.h"
 # include <QDate>
+
 JsonParser::JsonParser(QObject *parent)
-    : QObject{parent}, fJsonFile("Schedule.json")
+    : QObject{parent}, fJsonFile("Schedule.json"), Students{"Student1", "Student2", "Student3",
+          "Student4", "Student5", "Student6",
+          "Student7", "Student8", "Student9"}
 {
 
     QFile Dynamic("NewSchedule.json");
     Dynamic.open(QIODevice::ReadWrite);
     fJsonFile.open(QIODevice::ReadWrite);
     Dynamic.close();
-    QDateTime date = QDateTime::currentDateTime();
-    QString formattedTime = date.toString("dd.MM.yyyy hh:mm:ss");
+
     _GetWeekReply();
-    switch (date.date().dayOfWeek()) {
+
+    CurrentTime = QDateTime::currentDateTime();
+    //CurrentTime = date.toString("hh:mm");
+    //qDebug() << CurrentTime;
+    switch (CurrentTime.date().dayOfWeek()) {
     case 1:
         CurrentDayString = "понедельник";
         CurrentDayInt = 0;
@@ -50,6 +56,7 @@ JsonParser::JsonParser(QObject *parent)
 JsonParser::~JsonParser()
 {
     fJsonFile.close();
+    qDebug() << "Destructor called";
 }
 
 QJsonArray JsonParser::getFJson() const
@@ -131,6 +138,45 @@ void JsonParser::setCurrentDayCabs(const QStringList &newCurrentDayCabs)
         return;
     CurrentDayCabs = newCurrentDayCabs;
     emit CurrentDayCabsChanged();
+}
+
+QStringList JsonParser::getTimes() const
+{
+    return Times;
+}
+
+void JsonParser::setTimes(const QStringList &newTimes)
+{
+    if (Times == newTimes)
+        return;
+    Times = newTimes;
+    emit TimesChanged();
+}
+
+QString JsonParser::getCurrentSubject() const
+{
+    return CurrentSubject;
+}
+
+void JsonParser::setCurrentSubject(const QString &newCurrentSubject)
+{
+    if (CurrentSubject == newCurrentSubject)
+        return;
+    CurrentSubject = newCurrentSubject;
+    emit CurrentSubjectChanged();
+}
+
+QStringList JsonParser::getStudents() const
+{
+    return Students;
+}
+
+void JsonParser::setStudents(const QStringList &newStudents)
+{
+    if (Students == newStudents)
+        return;
+    Students = newStudents;
+    emit StudentsChanged();
 }
 
 signed int JsonParser::getWeek() const
@@ -297,6 +343,7 @@ void JsonParser::_DecrementDay()
     default:
         break;
     }
+
     qDebug() << CurrentDayString.c_str();
     emit CurrentDayIntChanged();
 }
@@ -338,6 +385,10 @@ void JsonParser::_ReadValue(signed int pDay) //deprecated
 
 void JsonParser::_FillCurrentDayS()
 {
+    //delete later
+    CurrentDayInt = 5;
+
+
     QString Buffer {fJsonFile.readAll()};
     QJsonParseError error;
     fJsonDoc = QJsonDocument::fromJson(Buffer.toUtf8(), &error);
@@ -385,6 +436,8 @@ void JsonParser::_FillCurrentDayS()
             this->TeacherName.push_back(ScheduleArray["schedule"][CurrentDayInt][OddEven.c_str()][Iterator][0]["tutor"].toString());
             this->Place.push_back(ScheduleArray["schedule"][CurrentDayInt][OddEven.c_str()][Iterator][0]["place"].toString());
             this->Type.push_back(ScheduleArray["schedule"][CurrentDayInt][OddEven.c_str()][Iterator][0]["type"].toString());
+            this->Times.push_back(ScheduleArray["lessonsTimes"][CurrentDayInt][Iterator].toString());
+            qDebug() << Times[Iterator];
         }
         // qDebug() << ScheduleArray["schedule"][CurrentDayInt]["odd"][Iterator][0]["name"].toString();
         // qDebug() << ScheduleArray["schedule"][CurrentDayInt]["odd"][Iterator][0]["tutor"];
@@ -411,4 +464,118 @@ void JsonParser::_FillCurrentDayS()
 void JsonParser::_PrintAmount()
 {
     qDebug() << ItemName.size();
+}
+
+void JsonParser::_UpdateTime()
+{
+    CurrentTime = QDateTime::currentDateTime();
+
+    qDebug() << CurrentTime.toString("hh:mm");;
+}
+
+void JsonParser::_ChangeCurentSubject()
+{
+
+    CurrentTime = QDateTime::fromString("10:20", "hh:mm"); //delete later
+    qDebug() << CurrentTime;
+    qDebug() << "_GetCurentSubject called";
+    for (size_t Iterator{}; Iterator < Times.size(); ++Iterator)
+    {
+        char *Token{std::strtok(const_cast<char*>(Times[Iterator].toStdString().c_str()), " -")};
+        std::vector <std::string> tTimes{};
+
+        for(;Token != nullptr;)
+        {
+            tTimes.push_back(Token);
+            qDebug() << Token;
+            Token = std::strtok(nullptr, " ");
+        }
+        if (CurrentTime <= QDateTime::fromString(tTimes[0].c_str(), "hh:mm") && Iterator == 0)
+        {
+            CurrentSubject = "Its not time yet";
+            qDebug() << "Its not time yet";
+            emit CurrentSubjectChanged();
+            return;
+        }
+        else if (CurrentTime >= QDateTime::fromString(tTimes[0].c_str(), "hh:mm") && CurrentTime <= QDateTime::fromString(tTimes[2].c_str(), "hh:mm"))
+        {
+            CurrentSubject = ItemName[Iterator];
+            qDebug() << CurrentSubject;
+            emit CurrentSubjectChanged();
+            return;
+        }
+        else
+        {
+            qDebug() << (CurrentTime >= QDateTime::fromString(tTimes[0].c_str(), "hh:mm"));
+            qDebug() << (CurrentTime <= QDateTime::fromString(tTimes[2].c_str(), "hh:mm"));
+            qDebug() << "Not this cycle " << tTimes[0] << tTimes[2];
+        }
+    }
+    CurrentSubject = "How?";
+    qDebug() << "How?";
+    emit CurrentSubjectChanged();
+    return;
+
+}
+
+void JsonParser::_StartCycle()
+{
+    fAttendanceResults.open("Attendance.txt", std::ios::out);
+    fVectorAttendance.clear();
+    if (!fAttendanceResults)
+    {
+        qDebug() << "error opening file";
+    }
+
+}
+
+void JsonParser::_IterateCycle(QString pStudent, QString pState)
+{
+    if (pStudent == "" || pState == "")
+    {
+        return;
+    }
+    else
+    {
+        fVectorAttendance.push_back(std::make_pair(pStudent.toStdString(), pState.toStdString()));
+        //fAttendanceResults << pStudent.toStdString() << ' ' << pState.toStdString() << '\n';
+    }
+
+}
+
+void JsonParser::_SaveResults()
+{
+    size_t StaticIterator{};
+    bool SizeExceeded{!(fVectorAttendance.size() > 0)};
+    for (size_t Iterator{0}; Iterator < Students.size(); ++Iterator)
+    {
+        if (!SizeExceeded && fVectorAttendance[StaticIterator].first != Students[Iterator].toStdString())
+        {
+            fVectorAttendance.push_back(std::make_pair(Students[Iterator].toStdString(), "-"));
+        }
+        else if (SizeExceeded)
+        {
+            fVectorAttendance.push_back(std::make_pair(Students[Iterator].toStdString(), "-"));
+        }
+        else
+        {
+            ++StaticIterator;
+            if (StaticIterator == fVectorAttendance.size())
+            {
+                SizeExceeded = true;
+            }
+        }
+    }
+    for (size_t Iterator{}; Iterator < fVectorAttendance.size(); ++Iterator)
+    {
+        fAttendanceResults << fVectorAttendance[Iterator].first << " " << fVectorAttendance[Iterator].second << '\n';
+        qDebug() << fVectorAttendance[Iterator].first << " " << fVectorAttendance[Iterator].second;
+    }
+    fAttendanceResults.close();
+    qDebug() << "File endnd";
+}
+
+int JsonParser::_GetAmountStudents()
+{
+    return Students.size();
 }
